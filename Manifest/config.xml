@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Settings Version='1'>
+    <Namespace Name='Extensions'>
+        <Setting Name='ExtensionRepository' Type='VT_BSTR' Value='Implicit'></Setting>
+        <Namespace Name='ExtensionRepositories'>
+            <Namespace Name='overgallery'>
+                <Setting Name='Id' Type='VT_BSTR' Value='690F3350-53EE-4EC4-A95B-750068897ED4'></Setting>
+                <Setting Name='LocalCacheRootFolder' Type='VT_BSTR' Value='c:\work\codes\windbg-scripts\Manifest'></Setting>
+                <Setting Name='IsEnabled' Type='VT_BOOL' Value='true'></Setting>
+                <Setting Name='URL' Type='VT_BSTR' Value='https://github.com/0vercl0k/windbg-scripts'></Setting>
+            </Namespace>
+        </Namespace>
+    </Namespace>
+</Settings>

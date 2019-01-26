@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ExtensionPackages Version='1.0.0.0' Compression='none'>
+    <ExtensionPackage>
+        <Name>Telescope</Name>
+        <Version>1.0.0.1</Version>
+        <Description>Telescope data dereference</Description>
+        <Components>
+            <ScriptComponent Name='Telescope' Type='Engine' File='..\telescope\telescope.js' FilePathKind='RepositoryRelative'>
+                <FunctionAliases>
+                    <FunctionAlias Name='telescope'>
+                        <AliasItem>
+                            <Syntax>
+<![CDATA[!telescope <address>]]>
+                            </Syntax>
+                            <Description>
+<![CDATA[Telescope dereference.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
+
+                </FunctionAliases>
+            </ScriptComponent>
+        </Components>
+    </ExtensionPackage>
+</ExtensionPackages>
