@@ -10,14 +10,53 @@
                     <FunctionAlias Name='telescope'>
                         <AliasItem>
                             <Syntax>
-<![CDATA[!telescope <address>]]>
+                                <![CDATA[!telescope <address>]]>
                             </Syntax>
                             <Description>
-<![CDATA[Telescope dereference.]]>
+                                <![CDATA[Telescope dereference.]]>
                             </Description>
                         </AliasItem>
                     </FunctionAlias>
+                </FunctionAliases>
+            </ScriptComponent>
+        </Components>
+    </ExtensionPackage>
 
+    <ExtensionPackage>
+        <Name>sm</Name>
+        <Version>1.0.0.1</Version>
+        <Description>Pretty printers for JS::Value and JSObject objects in SpiderMonkey</Description>
+        <Components>
+            <ScriptComponent Name='sm' Type='Engine' File='..\sm\sm.js' FilePathKind='RepositoryRelative'>
+                <LoadTriggers>
+                    <TriggerSet>
+                        <ModuleTrigger Name='xul.dll' />
+                    </TriggerSet>
+                    <TriggerSet>
+                        <ModuleTrigger Name='js.exe' />
+                    </TriggerSet>
+                </LoadTriggers>
+                <FunctionAliases>
+                    <FunctionAlias Name='smdump_jsvalue'>
+                        <AliasItem>
+                            <Syntax>
+                                <![CDATA[!smdump_jsvalue <address>]]>
+                            </Syntax>
+                            <Description>
+                                <![CDATA[Pretty print a JS::Value object.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
+                    <FunctionAlias Name='smdump_jsobject'>
+                        <AliasItem>
+                            <Syntax>
+                                <![CDATA[!smdump_jsobject <address>]]>
+                            </Syntax>
+                            <Description>
+                                <![CDATA[Pretty print a JSObject object.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
                 </FunctionAliases>
             </ScriptComponent>
         </Components>
