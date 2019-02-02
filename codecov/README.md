@@ -1,40 +1,26 @@
 # codecov.js
 
-`codecov.js` is a [JavaScript](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/javascript-debugger-scripting) debugger extension for WinDbg that allows to code-coverage out of a [TTD](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/time-travel-debugging-overview) trace. It generates a JSON file with every offsets (as well as the instruction size) in a module that have been executed during the recording.
+`codecov.js` is a [JavaScript](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/javascript-debugger-scripting) debugger extension for WinDbg that allows to code-coverage out of a [TTD](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/time-travel-debugging-overview) trace. It generates a text file with every offsets in a module that have been executed during the recording.
 
-The JSON file looks like the below:
+The file looks like the below:
 
-```json
-{
-  "TracePath":"C:\\work\\codes\\tmp\\js01.run",
-  "Modules":[
-    {
-      "Name":"c:\\windows\\system32\\kernelbase.dll",
-      "Base":"7fffb4ce0000",
-      "Size":"293000",
-      "CodeBlocks":[
-        ["25620",2],
-        ["25622",4],
-        ["25626",2],
-        ["25628",5],
-        ["25734",5],
-        ["25739",5],
-        ...
-      ]
-    },
-    {
-      "Name":"c:\\windows\\system32\\kernel32.dll",
-      "Base":"7fffb6460000",
-      "Size":"b3000",
-      "CodeBlocks":[
-        ["1f3a0",7],
-        ["21bb0",6],
-        ["1bb90",7],
-        ...
-      ]
-    }
-  ]
-}
+```text
+; TracePath: C:\work\codes\blazefox\js01.run
+; c:\windows\system32\kernelbase.dll, 7fffb4ce0000, 293000
+kernelbase.dll+5df40
+kernelbase.dll+5df43
+kernelbase.dll+5df47
+kernelbase.dll+5df4b
+kernelbase.dll+5df4f
+...
+; c:\windows\system32\kernel32.dll, 7fffb6460000, b3000
+kernel32.dll+1f3a0
+kernel32.dll+21bb0
+kernel32.dll+1bb90
+kernel32.dll+1a280
+kernel32.dll+1a284
+kernel32.dll+1e640
+kernel32.dll+63a0
 ```
 
 ## Usage
@@ -51,11 +37,13 @@ Looking for *kernel*..
 Found 2 hits
 Found 7815 unique addresses in C:\WINDOWS\System32\KERNELBASE.dll
 Found 1260 unique addresses in C:\WINDOWS\System32\KERNEL32.DLL
-Writing C:\work\codes\tmp\js01.run.kernel.json...
+Writing C:\work\codes\tmp\js01.run.kernel.text...
+Done!
+@$codecov("kernel")
 
 0:000> !codecov "kernel"
 Looking for *kernel*..
-The output file C:\work\codes\tmp\js01.run.kernel.json already exists, exiting.
+The output file C:\work\codes\tmp\js01.run.kernel.text already exists, exiting.
 @$codecov("kernel")
 ```
 
