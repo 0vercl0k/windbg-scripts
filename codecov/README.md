@@ -1,6 +1,6 @@
 # codecov.js
 
-`codecov.js` is a [JavaScript](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/javascript-debugger-scripting) debugger extension for WinDbg that allows to code-coverage out of a [TTD](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/time-travel-debugging-overview) trace. It generates a text file with every offsets in a module that have been executed during the recording.
+`codecov.js` is a [JavaScript](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/javascript-debugger-scripting) debugger extension for WinDbg that allows to extract code-coverage out of a [TTD](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/time-travel-debugging-overview) trace. It generates a text file with every offsets in a module that have been executed during the recording.
 
 The file looks like the below:
 
@@ -29,7 +29,7 @@ Run `.scriptload codecov.js` to load the script. You can extract code-coverage u
 
 ## Examples
 
-Extract the code-coverage for every modules matching `kernel32`:
+Extract code-coverage for every module having `kernel` in their name:
 
 ```text
 0:000> !codecov "kernel"
