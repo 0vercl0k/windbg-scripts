@@ -195,11 +195,38 @@ const ArgTypes = {
     7 : 'LAST_TYPE'
 };
 
+// Options that apply to every opcode. They are specified when creating
+// each opcode using OpcodeFactory::MakeOpXXXXX() family of functions
+// Do nothing special.
+const kPolNone = 0;
+
+// Convert EVAL_TRUE into EVAL_FALSE and vice-versa. This allows to express
+// negated conditions such as if ( a && !b).
+const kPolNegateEval = 1;
+
+// Zero the MatchContext context structure. This happens after the opcode
+// is evaluated.
+const kPolClearContext = 2;
+
+// Use OR when evaluating this set of opcodes. The policy evaluator by default
+// uses AND when evaluating. Very helpful when
+// used with kPolNegateEval. For example if you have a condition best expressed
+// as if(! (a && b && c)), the use of this flags allows it to be expressed as
+// if ((!a) || (!b) || (!c)).
+const kPolUseOREval = 4;
+
+// https://dxr.mozilla.org/mozilla-central/source/security/sandbox/chromium/sandbox/win/src/policy_params.h#36
+const ParameterNames = {
+    'OpenFile' : [
+        'NAME', 'BROKER', 'ACCESS', 'DISPOSITION', 'OPTIONS'
+    ],
+};
+
 //
 // Code.
 //
 
-function DisassPolicyBuffer(PolicyBufferAddress) {
+function DisassPolicyBuffer(PolicyBufferAddress, PolicyType) {
     let Ptr = PolicyBufferAddress;
     const PolicyBufferOpcodeCount = ReadQword(Ptr);
     Ptr += 8;
@@ -233,10 +260,13 @@ function DisassPolicyBuffer(PolicyBufferAddress) {
         // Once we dumped the opcode, let's prettify its parameters.
         //
 
-        const Operands = [
-            'Param' + SelectedParameter
-        ];
+        const Operands = [];
+        let FirstOperand = 'Param' + SelectedParameter;
+        if(ParameterNames[PolicyType] != undefined) {
+            FirstOperand = PolicyType + '::' + ParameterNames[PolicyType][SelectedParameter];
+        }
 
+        Operands.push(FirstOperand);
         if(OpcodeId == OP_ALWAYS_TRUE || OpcodeId == OP_ALWAYS_FALSE) {
         } else if(OpcodeId == OP_NUMBER_MATCH) {
             const ArgType = ArgTypes[Parameters[1].asNumber()];
@@ -270,7 +300,12 @@ function DisassPolicyBuffer(PolicyBufferAddress) {
         //
 
         const OpcodeIdStr = Opcodes[OpcodeId];
-        Logln(OpcodeIdStr + '<' + Operands.join(', ')  + '>');
+        if(Options.bitwiseAnd(kPolNegateEval).compareTo(0) != 0) {
+            Logln('!' + OpcodeIdStr + '<' + Operands.join(', ')  + '>');
+        } else {
+            Logln(OpcodeIdStr + '<' + Operands.join(', ')  + '>');
+        }
+
         if(OpcodeId == OP_ACTION) {
             Logln('');
         }
