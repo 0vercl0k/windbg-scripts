@@ -371,6 +371,7 @@ class __JSArray {
         this._Header = heapslot_to_objectelements(this._Content);
         this._Length = this._Header.length;
         this._Capacity = this._Header.capacity;
+        this._InitializedLength = this._Header.initializedLength;
     }
 
     get Length() {
@@ -381,10 +382,14 @@ class __JSArray {
         return this._Capacity;
     }
 
+    get InitializedLength() {
+        return this._InitializedLength;
+    }
+
     toString() {
         const Max = 10;
         const Content = [];
-        for(let Idx = 0; Idx < Math.min(Max, this.Length); ++Idx) {
+        for(let Idx = 0; Idx < Math.min(Max, this._InitializedLength); ++Idx) {
             const Addr = this._Content.add(Idx * 8);
             const JSValue = read_u64(Addr);
             const Inst = jsvalue_to_instance(JSValue);
@@ -399,9 +404,10 @@ class __JSArray {
     }
 
     Display() {
-        this.Logger('  Length: ' + this.Length);
-        this.Logger('Capacity: ' + this.Capacity);
-        this.Logger(' Content: ' + this);
+        this.Logger('           Length: ' + this.Length);
+        this.Logger('         Capacity: ' + this.Capacity);
+        this.Logger('InitializedLength: ' + this.InitializedLength);
+        this.Logger('          Content: ' + this);
     }
 }
 
