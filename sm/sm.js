@@ -705,6 +705,7 @@ const Names2Types = {
     'Undefined' : __JSUndefined,
     'Symbol' : __JSSymbol,
     'Double' : __JSDouble,
+    'Magic' : __JSMagic,
 
     'Float64Array' : __JSTypedArray,
     'Float32Array' : __JSTypedArray,
