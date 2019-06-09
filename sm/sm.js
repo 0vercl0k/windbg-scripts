@@ -931,15 +931,35 @@ function Init() {
     Module = 'js.exe';
 }
 
+function ion_insertbp() {
+    const Control = host.namespace.Debugger.Utility.Control;
+    for(const S of Control.ExecuteCommand(
+        '?? this->masm->masm.m_formatter.m_buffer.m_buffer.mBegin[this->masm->masm.m_formatter.m_buffer.m_buffer.mLength] = 0xcc'
+    )) {
+        logln(S);
+    }
+
+    for(const S of Control.ExecuteCommand(
+        '?? this->masm->masm.m_formatter.m_buffer.m_buffer.mLength++'
+    )) {
+        logln(S);
+    }
+}
+
 function initializeScript() {
     return [
-        new host.apiVersionSupport(1, 2),
+        new host.apiVersionSupport(1, 3),
         new host.functionAlias(
             smdump_jsvalue,
             'smdump_jsvalue'
-        ), new host.functionAlias(
+        ),
+        new host.functionAlias(
             smdump_jsobject,
             'smdump_jsobject'
+        ),
+        new host.functionAlias(
+            ion_insertbp,
+            'ion_insertbp'
         )
     ];
 }

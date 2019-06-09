@@ -57,6 +57,16 @@
                             </Description>
                         </AliasItem>
                     </FunctionAlias>
+                    <FunctionAlias Name='ion_insertbp'>
+                        <AliasItem>
+                            <Syntax>
+                                <![CDATA[!ion_insertbp]]>
+                            </Syntax>
+                            <Description>
+                                <![CDATA[Insert an int3 in the assembly buffer to debug JIT'd code.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
                 </FunctionAliases>
             </ScriptComponent>
         </Components>

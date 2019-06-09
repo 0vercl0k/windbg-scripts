@@ -8,7 +8,7 @@ It has been used and tested against spidermonkey during end of 2018 - but should
 
 ## Usage
 
-Run `.scriptload sm.js` to load the script. You can dump `js::Value` with `!smdump_jsvalue` and `JSObject` with `!smdump_jsobject`.
+Run `.scriptload sm.js` to load the script. You can dump `js::Value` with `!smdump_jsvalue` and `JSObject` with `!smdump_jsobject`. You can insert a software breakpoint in a JIT buffer with `!ion_insertbp`.
 
 ## Examples
 
@@ -22,3 +22,25 @@ Run `.scriptload sm.js` to load the script. You can dump `js::Value` with `!smdu
 @$smdump_jsvalue(vp[2].asBits_)
 ```
 
+* Setting a breakpoint in code being JIT'd by IonMonkey:
+
+```text
+0:008> g
+Breakpoint 0 hit
+js!js::jit::CodeGenerator::visitBoundsCheck:
+00007ff7`87d9e1a0 4156            push    r14
+
+0:000> !ion_insertbp
+unsigned char 0xcc ''
+unsigned int64 0x5b
+@$ion_insertbp()
+
+0:000> g
+(1a60.f58): Break instruction exception - code 80000003 (first chance)
+000003d9`ca67991b cc              int     3
+
+0:000> u . l2
+000003d9`ca67991b cc              int     3
+000003d9`ca67991c 3bd8            cmp     ebx,eax
+
+```
