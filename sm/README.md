@@ -8,7 +8,7 @@ It has been used and tested against spidermonkey during end of 2018 - but should
 
 ## Usage
 
-Run `.scriptload sm.js` to load the script. You can dump `js::Value` with `!smdump_jsvalue` and `JSObject` with `!smdump_jsobject`. You can insert a software breakpoint in a JIT buffer with `!ion_insertbp`.
+Run `.scriptload sm.js` to load the script. You can dump `js::Value` with `!smdump_jsvalue` and `JSObject` with `!smdump_jsobject`. You can insert a software breakpoint in a JIT buffer with `!ion_insertbp` and `!in_nursery` to figure out if an object lives inside the Nursery heap.
 
 ## Examples
 
@@ -42,5 +42,18 @@ unsigned int64 0x5b
 0:000> u . l2
 000003d9`ca67991b cc              int     3
 000003d9`ca67991c 3bd8            cmp     ebx,eax
+```
 
+* Figure out if an object lives in the Nursery heap:
+
+```text
+0:000> !in_nursery 0x0003b74caa02010
+Checking js::NurseryChunk @0x3b74caa00000..
+0x3b74caa02010 belongs to the js::Nursery chunk @0x3b74caa00000!
+@$in_nursery(0x0003b74caa02010)
+
+0:000> !in_nursery 0x00001dfedecd810
+Checking js::NurseryChunk @0x3b74caa00000..
+0x1dfedecd810 was not found to be in any chunk of the Nursery.
+@$in_nursery(0x00001dfedecd810)
 ```

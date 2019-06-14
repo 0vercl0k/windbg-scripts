@@ -961,6 +961,62 @@ function ion_insertbp() {
     JITBuffer.mLength += 1;
 }
 
+function in_nursery(Addr) {
+    if(Addr == undefined) {
+        logln('!in_nursery <object addr>');
+        return;
+    }
+
+    //
+    // Find 'cx' the JSContext somewhere..
+    //
+
+    let Context = undefined;
+    const CurrentThread = host.currentThread;
+    for(const Frame of CurrentThread.Stack.Frames) {
+        const Parameters = Frame.Parameters;
+        Context = Parameters.cx;
+        if(Context == undefined ||
+           Context.targetType.toString() != 'JSContext *') {
+            continue;
+        }
+
+        break;
+    }
+
+    if(Context == undefined) {
+        logln('Could not locate a JSContext in this call-stack.');
+        return;
+    }
+
+    //
+    // Iterate through the chunk regions.
+    //
+
+    const Nursery = Context.runtime_.value.gc.nursery_.value;
+    const Chunks = Nursery.chunks_;
+    let FoundChunk = undefined;
+    for(let Idx = 0; Idx < Chunks.mLength; Idx++) {
+        const Chunk = Chunks.mBegin[Idx];
+        const StartAddress = Chunk.data.address;
+        const ChunkSize = Chunk.data.targetType.size;
+        const EndAddress = StartAddress.add(ChunkSize);
+        logln(`Checking js::NurseryChunk @0x${Chunk.data.address.toString(16)}..`);
+        if(Addr.compareTo(StartAddress) >= 0 &&
+           Addr.compareTo(EndAddress) < 0) {
+               FoundChunk = Chunk;
+               break;
+           }
+    }
+
+    if(FoundChunk != undefined) {
+        logln(`0x${Addr.toString(16)} has been found in the js::NurseryChunk @0x${FoundChunk.data.address.toString(16)}!`);
+        return;
+    }
+
+    logln(`0x${Addr.toString(16)} was not found to be in any chunk of the Nursery.`);
+}
+
 function initializeScript() {
     return [
         new host.apiVersionSupport(1, 3),
@@ -975,6 +1031,10 @@ function initializeScript() {
         new host.functionAlias(
             ion_insertbp,
             'ion_insertbp'
+        ),
+        new host.functionAlias(
+            in_nursery,
+            'in_nursery'
         )
     ];
 }

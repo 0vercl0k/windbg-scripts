@@ -67,6 +67,17 @@
                             </Description>
                         </AliasItem>
                     </FunctionAlias>
+                    <FunctionAlias Name='in_nursery'>
+                        <AliasItem>
+                            <Syntax>
+                                <![CDATA[!in_nursery]]>
+                            </Syntax>
+                            <Description>
+                                <![CDATA[Figure out if an object is stored in the Nursery or not.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
+
                 </FunctionAliases>
             </ScriptComponent>
         </Components>
