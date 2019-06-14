@@ -977,6 +977,10 @@ function in_nursery(Addr) {
         const CurrentThread = host.currentThread;
         for(const Frame of CurrentThread.Stack.Frames) {
             const Parameters = Frame.Parameters;
+            if(Parameters == undefined) {
+                continue;
+            }
+
             Context = Parameters.cx;
             if(Context == undefined ||
             Context.targetType.toString() != 'JSContext *') {
