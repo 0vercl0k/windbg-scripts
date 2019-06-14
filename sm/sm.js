@@ -939,18 +939,26 @@ function Init() {
 }
 
 function ion_insertbp() {
-    const Control = host.namespace.Debugger.Utility.Control;
-    for(const S of Control.ExecuteCommand(
-        '?? this->masm->masm.m_formatter.m_buffer.m_buffer.mBegin[this->masm->masm.m_formatter.m_buffer.m_buffer.mLength] = 0xcc'
-    )) {
-        logln(S);
+    // XXX: Having the current frame would be better.. but not sure if
+    // this is something possible?
+    const CurrentThread = host.currentThread;
+    const LowestFrame = CurrentThread.Stack.Frames[0];
+    const LocalVariables = LowestFrame.LocalVariables;
+    const CodeGenerator = LocalVariables.this;
+    if(CodeGenerator === undefined ||
+       CodeGenerator.targetType.toString() != 'js::jit::CodeGenerator *') {
+        logln('The script expects `this` to be a js::jit::CodeGenerator in the lowest frame.');
+        return;
     }
 
-    for(const S of Control.ExecuteCommand(
-        '?? this->masm->masm.m_formatter.m_buffer.m_buffer.mLength++'
-    )) {
-        logln(S);
-    }
+    const JITBuffer = CodeGenerator.masm.masm.m_formatter.m_buffer.m_buffer;
+    // XXX: So sounds like I can't do JITBuffer.mBegin[JITBuffer.mLength] = 0xcc,
+    // so here I am writing ugly things :x
+    const BreakpointAddress = JITBuffer.mBegin.address.add(JITBuffer.mLength);
+    logln(`JIT buffer is at ${JITBuffer.mBegin.address.toString(16)}`);
+    logln(`Writing breakpoint at ${BreakpointAddress.toString(16)}`);
+    host.evaluateExpression(`*(char*)0x${BreakpointAddress.toString(16)} = 0xcc`);
+    JITBuffer.mLength += 1;
 }
 
 function initializeScript() {
