@@ -19,6 +19,7 @@
 let Module = null;
 
 const logln = p => host.diagnostics.debugLog(p + '\n');
+const hex = p => p.toString(16);
 const JSVAL_TAG_SHIFT = host.Int64(47);
 const JSVAL_PAYLOAD_MASK = host.Int64(1).bitwiseShiftLeft(JSVAL_TAG_SHIFT).subtract(1);
 const CLASS_NON_NATIVE = host.Int64(0x40000);
@@ -955,12 +956,13 @@ function ion_insertbp() {
     // XXX: So sounds like I can't do JITBuffer.mBegin[JITBuffer.mLength] = 0xcc,
     // so here I am writing ugly things :x
     const BreakpointAddress = JITBuffer.mBegin.address.add(JITBuffer.mLength);
-    logln(`JIT buffer is at ${JITBuffer.mBegin.address.toString(16)}`);
-    logln(`Writing breakpoint at ${BreakpointAddress.toString(16)}`);
-    host.evaluateExpression(`*(char*)0x${BreakpointAddress.toString(16)} = 0xcc`);
+    logln(`JIT buffer is at ${hex(JITBuffer.mBegin.address)}`);
+    logln(`Writing breakpoint at ${hex(BreakpointAddress)}`);
+    host.evaluateExpression(`*(char*)0x${hex(BreakpointAddress)} = 0xcc`);
     JITBuffer.mLength += 1;
 }
 
+let Context = undefined;
 function in_nursery(Addr) {
     if(Addr == undefined) {
         logln('!in_nursery <object addr>');
@@ -971,17 +973,21 @@ function in_nursery(Addr) {
     // Find 'cx' the JSContext somewhere..
     //
 
-    let Context = undefined;
-    const CurrentThread = host.currentThread;
-    for(const Frame of CurrentThread.Stack.Frames) {
-        const Parameters = Frame.Parameters;
-        Context = Parameters.cx;
-        if(Context == undefined ||
-           Context.targetType.toString() != 'JSContext *') {
-            continue;
-        }
+    if(Context == undefined) {
+        const CurrentThread = host.currentThread;
+        for(const Frame of CurrentThread.Stack.Frames) {
+            const Parameters = Frame.Parameters;
+            Context = Parameters.cx;
+            if(Context == undefined ||
+            Context.targetType.toString() != 'JSContext *') {
+                continue;
+            }
 
-        break;
+            logln(`Caching JSContext @${hex(Context.address)} for next times`);
+            break;
+        }
+    } else {
+        logln(`Using previously cached JSContext @0x${hex(Context.address)}`);
     }
 
     if(Context == undefined) {
