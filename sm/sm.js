@@ -963,7 +963,37 @@ function ion_insertbp() {
 }
 
 let Context = undefined;
+function dump_nursery_stats(Nursery) {
+    logln(`${hex(Nursery.address)}: js::Nursery`);
+    const ChunkCountLimit = Nursery.chunkCountLimit_;
+    const NurseryChunk = host.createPointerObject(
+        0,
+        Module,
+        'js::NurseryChunk*'
+    );
+    const ChunkSize = NurseryChunk.dereference().targetType.size;
+    const MaxSize = ChunkCountLimit.multiply(ChunkSize);
+    logln(` ChunkCountLimit: ${hex(ChunkCountLimit)} (${MaxSize / 1024 / 1024} MB)`);
+    const Capacity = Nursery.capacity_;
+    logln(`        Capacity: ${hex(Capacity)} bytes`)
+    const CurrentChunk = Nursery.currentStartPosition_;
+    logln(`    CurrentChunk: ${hex(CurrentChunk)}`);
+    const Position = Nursery.position_;
+    logln(`        Position: ${hex(Position)}`);
+    logln('          Chunks:');
+    const Chunks = Nursery.chunks_;
+    for(let Idx = 0; Idx < Chunks.mLength; Idx++) {
+        const Chunk = Chunks.mBegin[Idx];
+        const StartAddress = Chunk.data.address;
+        const EndAddress = StartAddress.add(ChunkSize).subtract(1);
+        const PaddedIdx = Idx.toString().padStart(2, '0');
+        logln(`            ${PaddedIdx}: [${hex(StartAddress)} - ${hex(EndAddress)}]`);
+    }
+}
+
 function in_nursery(Addr) {
+    init();
+
     if(Addr == undefined) {
         logln('!in_nursery <object addr>');
         return;
@@ -987,7 +1017,7 @@ function in_nursery(Addr) {
                 continue;
             }
 
-            logln(`Caching JSContext @${hex(Context.address)} for next times`);
+            logln(`Caching JSContext @${hex(Context.address)} for next times.`);
             break;
         }
     } else {
@@ -1000,18 +1030,34 @@ function in_nursery(Addr) {
     }
 
     //
-    // Iterate through the chunk regions.
+    // Get the Nursery.
     //
 
     const Nursery = Context.runtime_.value.gc.nursery_.value;
+    const NurseryChunk = host.createPointerObject(
+        0,
+        Module,
+        'js::NurseryChunk*'
+    );
+    const ChunkUseableSize = NurseryChunk.data.targetType.size;
+
+    //
+    // Dump some stats about the Nursery.
+    //
+
+    dump_nursery_stats(Nursery);
+    logln('-------');
+
+    //
+    // Iterate through the chunk regions.
+    //
+
     const Chunks = Nursery.chunks_;
     let FoundChunk = undefined;
     for(let Idx = 0; Idx < Chunks.mLength; Idx++) {
         const Chunk = Chunks.mBegin[Idx];
         const StartAddress = Chunk.data.address;
-        const ChunkSize = Chunk.data.targetType.size;
-        const EndAddress = StartAddress.add(ChunkSize);
-        logln(`Checking js::NurseryChunk @0x${Chunk.data.address.toString(16)}..`);
+        const EndAddress = StartAddress.add(ChunkUseableSize);
         if(Addr.compareTo(StartAddress) >= 0 &&
            Addr.compareTo(EndAddress) < 0) {
                FoundChunk = Chunk;
@@ -1024,7 +1070,7 @@ function in_nursery(Addr) {
         return;
     }
 
-    logln(`0x${Addr.toString(16)} was not found to be in any chunk of the Nursery.`);
+    logln(`0x${Addr.toString(16)} hasn't been found be in any Nursery js::NurseryChunk.`);
 }
 
 function initializeScript() {
