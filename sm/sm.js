@@ -874,7 +874,7 @@ class __JSObject {
 Names2Types['Object'] = __JSObject;
 
 function smdump_jsobject(Addr, Type = null) {
-    Init();
+    init();
 
     if(Addr.hasOwnProperty('address')) {
         Addr = Addr.address;
@@ -898,7 +898,7 @@ function smdump_jsobject(Addr, Type = null) {
 }
 
 function smdump_jsvalue(Addr) {
-    Init();
+    init();
 
     if(Addr == undefined) {
         logln('!smdump_jsvalue <jsvalue object addr>');
@@ -921,7 +921,7 @@ function smdump_jsvalue(Addr) {
     return smdump_jsobject(JSValue.Payload, Name);
 }
 
-function Init() {
+function init() {
     if(Module != null) {
         return;
     }
