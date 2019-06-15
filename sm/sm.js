@@ -958,7 +958,7 @@ function ion_insertbp() {
     const BreakpointAddress = JITBuffer.mBegin.address.add(JITBuffer.mLength);
     logln(`JIT buffer is at ${hex(JITBuffer.mBegin.address)}`);
     logln(`Writing breakpoint at ${hex(BreakpointAddress)}`);
-    host.evaluateExpression(`*(char*)0x${hex(BreakpointAddress)} = 0xcc`);
+    host.evaluateExpression(`*(char*)${hex(BreakpointAddress)} = 0xcc`);
     JITBuffer.mLength += 1;
 }
 
@@ -1021,7 +1021,7 @@ function in_nursery(Addr) {
             break;
         }
     } else {
-        logln(`Using previously cached JSContext @0x${hex(Context.address)}`);
+        logln(`Using previously cached JSContext @${hex(Context.address)}`);
     }
 
     if(Context == undefined) {
@@ -1066,11 +1066,11 @@ function in_nursery(Addr) {
     }
 
     if(FoundChunk != undefined) {
-        logln(`0x${Addr.toString(16)} has been found in the js::NurseryChunk @0x${FoundChunk.data.address.toString(16)}!`);
+        logln(`${hex(Addr)} has been found in the js::NurseryChunk @${hex(FoundChunk.data.address)}!`);
         return;
     }
 
-    logln(`0x${Addr.toString(16)} hasn't been found be in any Nursery js::NurseryChunk.`);
+    logln(`${hex(Addr)} hasn't been found be in any Nursery js::NurseryChunk.`);
 }
 
 function initializeScript() {

@@ -47,13 +47,41 @@ unsigned int64 0x5b
 * Figure out if an object lives in the Nursery heap:
 
 ```text
-0:000> !in_nursery 0x0003b74caa02010
-Checking js::NurseryChunk @0x3b74caa00000..
-0x3b74caa02010 belongs to the js::Nursery chunk @0x3b74caa00000!
-@$in_nursery(0x0003b74caa02010)
+0:008> !in_nursery 0x19767e00df8
+Using previously cached JSContext @0x000001fe17318000
+0x000001fe1731cde8: js::Nursery
+ ChunkCountLimit: 0x0000000000000010 (16 MB)
+        Capacity: 0x0000000000fffe80 bytes
+    CurrentChunk: 0x0000019767e00000
+        Position: 0x0000019767e00eb0
+          Chunks:
+            00: [0x0000019767e00000 - 0x0000019767efffff]
+            01: [0x00001fa2aee00000 - 0x00001fa2aeefffff]
+            02: [0x0000115905000000 - 0x00001159050fffff]
+            03: [0x00002fc505200000 - 0x00002fc5052fffff]
+            04: [0x000020d078700000 - 0x000020d0787fffff]
+            05: [0x0000238217200000 - 0x00002382172fffff]
+            06: [0x00003ff041f00000 - 0x00003ff041ffffff]
+            07: [0x00001a5458700000 - 0x00001a54587fffff]
+-------
+0x19767e00df8 has been found in the js::NurseryChunk @0x19767e00000!
 
-0:000> !in_nursery 0x00001dfedecd810
-Checking js::NurseryChunk @0x3b74caa00000..
-0x1dfedecd810 was not found to be in any chunk of the Nursery.
-@$in_nursery(0x00001dfedecd810)
+0:008> !in_nursery 0x00001fe174be810
+Using previously cached JSContext @0x000001fe17318000
+0x000001fe1731cde8: js::Nursery
+ ChunkCountLimit: 0x0000000000000010 (16 MB)
+        Capacity: 0x0000000000fffe80 bytes
+    CurrentChunk: 0x0000019767e00000
+        Position: 0x0000019767e00eb0
+          Chunks:
+            00: [0x0000019767e00000 - 0x0000019767efffff]
+            01: [0x00001fa2aee00000 - 0x00001fa2aeefffff]
+            02: [0x0000115905000000 - 0x00001159050fffff]
+            03: [0x00002fc505200000 - 0x00002fc5052fffff]
+            04: [0x000020d078700000 - 0x000020d0787fffff]
+            05: [0x0000238217200000 - 0x00002382172fffff]
+            06: [0x00003ff041f00000 - 0x00003ff041ffffff]
+            07: [0x00001a5458700000 - 0x00001a54587fffff]
+-------
+0x1fe174be810 hasn't been found be in any Nursery js::NurseryChunk.
 ```
