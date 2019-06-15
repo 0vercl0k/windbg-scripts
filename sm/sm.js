@@ -19,7 +19,7 @@
 let Module = null;
 
 const logln = p => host.diagnostics.debugLog(p + '\n');
-const hex = p => p.toString(16);
+const hex = p => '0x' + p.toString(16).padStart(16, '0');
 const JSVAL_TAG_SHIFT = host.Int64(47);
 const JSVAL_PAYLOAD_MASK = host.Int64(1).bitwiseShiftLeft(JSVAL_TAG_SHIFT).subtract(1);
 const CLASS_NON_NATIVE = host.Int64(0x40000);
