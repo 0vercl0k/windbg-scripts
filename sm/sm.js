@@ -195,6 +195,70 @@ class __JSMagic {
     }
 }
 
+class __JSArgument {
+    //  * ArgumentsObject instances use the following reserved slots:
+    //  *
+    //  *   INITIAL_LENGTH_SLOT
+    //  *     Stores the initial value of arguments.length, plus a bit indicating
+    //  *     whether arguments.length and/or arguments[@@iterator] have been
+    //  *     modified.  Use initialLength(), hasOverriddenLength(), and
+    //  *     hasOverriddenIterator() to access these values.  If arguments.length has
+    //  *     been modified, then the current value of arguments.length is stored in
+    //  *     another slot associated with a new property.
+    //  *   DATA_SLOT
+    //  *     Stores an ArgumentsData*, described above.
+    //  *   MAYBE_CALL_SLOT
+    //  *     Stores the CallObject, if the callee has aliased bindings. See
+    //  *     the ArgumentsData::args comment.
+    //  *   CALLEE_SLOT
+    //  *     Stores the initial arguments.callee. This value can be overridden on
+    //  *     mapped arguments objects, see hasOverriddenCallee.
+    //  */
+    // class ArgumentsObject : public NativeObject {
+    //     protected:
+    //      static const uint32_t INITIAL_LENGTH_SLOT = 0;
+    //      static const uint32_t DATA_SLOT = 1;
+    //      static const uint32_t MAYBE_CALL_SLOT = 2;
+    //      static const uint32_t CALLEE_SLOT = 3;
+    constructor(Addr) {
+        this._Addr = Addr;
+        this._Obj = host.createPointerObject(
+            Addr,
+            Module,
+            'js::ArgumentsObject*'
+        );
+
+        const INITIAL_LENGTH_SLOT = host.Int64(0);
+        const DATA_SLOT = host.Int64(1);
+        const MAYBE_CALL_SLOT = host.Int64(2);
+        const CALLEE_SLOT = host.Int64(3);
+        const ArgumentsObjectSize = this._Obj.dereference().targetType.size;
+        this._SlotAddress = this._Obj.address.add(ArgumentsObjectSize);
+
+        const InitialLengthSlot = read_u64(this._SlotAddress.add(
+            INITIAL_LENGTH_SLOT.multiply(8)
+        ));
+        this._InitialLength = new __JSInt32(InitialLengthSlot)._Value;
+
+        this._Data = read_u64(this._SlotAddress.add(
+            DATA_SLOT.multiply(8)
+        )).bitwiseShiftLeft(1);
+    }
+
+    toString() {
+        return 'Arguments(..)';
+    }
+
+    Logger(Content) {
+        logln(this._Addr.toString(16) + ': js!js::ArgumentsObject: ' + Content);
+    }
+
+    Display() {
+        this.Logger('InitialLength: ' + this._InitialLength);
+        this.Logger('         Data: ' + hex(this._Data) + ' (js!js::ArgumentsData)');
+    }
+}
+
 class __JSNull {
     constructor(Addr) {
         this._Addr = Addr;
@@ -707,6 +771,7 @@ const Names2Types = {
     'Symbol' : __JSSymbol,
     'Double' : __JSDouble,
     'Magic' : __JSMagic,
+    'Arguments' : __JSArgument,
 
     'Float64Array' : __JSTypedArray,
     'Float32Array' : __JSTypedArray,
