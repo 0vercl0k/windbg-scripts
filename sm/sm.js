@@ -434,21 +434,15 @@ class __JSArray {
         // this.Obj.elements_.value.address
         this._Content = this._Obj.elements_.address;
         this._Header = heapslot_to_objectelements(this._Content);
+        // The flags word stores both the flags and the number of shifted elements.
+        // Allow shifting 2047 elements before actually moving the elements.
+        const NumShiftedElementsBits = host.Int64(11);
+        const NumShiftedElementsShift = host.Int64(32).subtract(NumShiftedElementsBits);
+        this._Flags = this._Header.flags;
+        this._NumShifted = this._Flags.bitwiseShiftRight(NumShiftedElementsShift)
         this._Length = this._Header.length;
         this._Capacity = this._Header.capacity;
         this._InitializedLength = this._Header.initializedLength;
-    }
-
-    get Length() {
-        return this._Length;
-    }
-
-    get Capacity() {
-        return this._Capacity;
-    }
-
-    get InitializedLength() {
-        return this._InitializedLength;
     }
 
     toString() {
@@ -461,7 +455,7 @@ class __JSArray {
             Content.push(Inst.toString());
         }
 
-        return '[' + Content.join(', ') + (this.Length > Max ? ', ...' : '') + ']';
+        return '[' + Content.join(', ') + (this._Length > Max ? ', ...' : '') + ']';
     }
 
     Logger(Content) {
@@ -469,9 +463,10 @@ class __JSArray {
     }
 
     Display() {
-        this.Logger('           Length: ' + this.Length);
-        this.Logger('         Capacity: ' + this.Capacity);
-        this.Logger('InitializedLength: ' + this.InitializedLength);
+        this.Logger('           Length: ' + this._Length);
+        this.Logger('         Capacity: ' + this._Capacity);
+        this.Logger('InitializedLength: ' + this._InitializedLength);
+        this.Logger('       NumShifted: ' + this._NumShifted + ' (flags: ' + hex(this._Flags) + ')');
         this.Logger('          Content: ' + this);
     }
 }
