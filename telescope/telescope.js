@@ -564,15 +564,30 @@ class _ChainEntry {
 
     toString() {
         const S = FormatPtr(this.Value) + ' (' + this.Name + ')';
-        if(!this.Last || this.AddrRegion == undefined) {
+        if(!this.Last) {
             return S;
         }
 
-        if(this.AddrRegion.Executable) {
+        //
+        // We only provide disassembly if we know that the code is executeable.
+        // And in order to know that, we need to have a valid `AddrRegion`.
+        //
+
+        if(this.AddrRegion != undefined && this.AddrRegion.Executable) {
             return Disassemble(this.Addr);
         }
 
-        if(this.AddrRegion.Readable) {
+        //
+        // If we have a string stored in a heap allocation what happens is the following:
+        //   - The extension does not know about heap, so `AddrRegion` for such a pointer
+        //   would be `undefined`.
+        //   - Even though it is undefined, we would like to display a string if there is any,
+        //   instead of just the first qword.
+        // So to enable the scenario to work, we allow to enter the below block with an `AddrRegion`
+        // that is undefined.
+        //
+
+        if(this.AddrRegion == undefined || this.AddrRegion.Readable) {
 
             //
             // Maybe it points on a unicode / ascii string?
@@ -587,12 +602,12 @@ class _ChainEntry {
             };
 
             if(IsPrintable(Ansi)) {
-                return Ansi;
+                return `Ascii(${Ansi})`;
             }
 
             const Wide = ReadWideString(this.Addr);
             if(IsPrintable(Wide)) {
-                return Wide;
+                return `Unicode(${Wide})`;
             }
         }
 
