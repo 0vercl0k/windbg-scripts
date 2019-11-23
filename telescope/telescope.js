@@ -15,6 +15,9 @@ const DefaultNumberOfLines = 10;
 // This is the number of instructions to disassemble when a code pointer is encountered.
 const DefaultNumberOfInstructions = 3;
 
+// This is the maximum number of characters displayed for strings in the !telescope output.
+const DefaultMaxStringLength = 15;
+
 //
 // Utility functions.
 //
@@ -109,6 +112,14 @@ function FormatU64(Addr) {
 
 function FormatU32(Addr) {
     return '0x' + Addr.toString(16).padStart(8, '0');
+}
+
+function FormatString(Str) {
+    if(Str.length > DefaultMaxStringLength) {
+        return Str.substr(0, DefaultMaxStringLength) + '...'
+    }
+
+    return Str;
 }
 
 function BitSet(Value, Bit) {
@@ -589,11 +600,6 @@ class _ChainEntry {
 
         if(this.AddrRegion == undefined || this.AddrRegion.Readable) {
 
-            //
-            // Maybe it points on a unicode / ascii string?
-            //
-
-            const Ansi = ReadString(this.Addr);
             const IsPrintable = p => {
                 return p != null &&
                     // XXX: ugly AF.
@@ -601,13 +607,19 @@ class _ChainEntry {
                     p.length > 5
             };
 
+            //
+            // Maybe it points on a unicode / ascii string?
+            //
+
+            const Ansi = ReadString(this.Addr).substr(0, 10);
+
             if(IsPrintable(Ansi)) {
-                return `Ascii(${Ansi})`;
+                return `${FormatPtr(this.Value)} (Ascii(${FormatString(Ansi)}))`;
             }
 
             const Wide = ReadWideString(this.Addr);
             if(IsPrintable(Wide)) {
-                return `Unicode(${Wide})`;
+                return  `${FormatPtr(this.Value)} (Unicode(${FormatString(Wide)}))`;
             }
         }
 
