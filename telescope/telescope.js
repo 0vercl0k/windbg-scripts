@@ -611,7 +611,7 @@ class _ChainEntry {
             // Maybe it points on a unicode / ascii string?
             //
 
-            const Ansi = ReadString(this.Addr).substr(0, 10);
+            const Ansi = ReadString(this.Addr);
 
             if(IsPrintable(Ansi)) {
                 return `${FormatPtr(this.Value)} (Ascii(${FormatString(Ansi)}))`;
