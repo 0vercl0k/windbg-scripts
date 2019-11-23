@@ -614,12 +614,12 @@ class _ChainEntry {
             const Ansi = ReadString(this.Addr);
 
             if(IsPrintable(Ansi)) {
-                return `${FormatPtr(this.Value)} (Ascii(${FormatString(Ansi)}))`;
+                return `${FormatPtr(this.Addr)} (Ascii(${FormatString(Ansi)}))`;
             }
 
             const Wide = ReadWideString(this.Addr);
             if(IsPrintable(Wide)) {
-                return  `${FormatPtr(this.Value)} (Unicode(${FormatString(Wide)}))`;
+                return  `${FormatPtr(this.Addr)} (Unicode(${FormatString(Wide)}))`;
             }
         }
 
