@@ -341,6 +341,23 @@ function HandleUser() {
         //
         // TEB!
         //
+        // In the case where you have broken `ntdll` symbols, you might not have
+        // the definition of the `_TEB` structure. In this case, the structured
+        // `Teb` object above is undefined (like in issues #2). So we try to be resilient
+        // against that in the below.
+        //
+
+        if(Teb == undefined) {
+            const General = host.namespace.Debugger.State.PseudoRegisters.General;
+            VaSpace.push(new _Region(
+                General.teb.address,
+                0x100,
+                'Teb of ' + Thread.Id.toString(16),
+                'rw-'
+            ));
+
+            continue;
+        }
 
         VaSpace.push(new _Region(
             Teb.address,
@@ -364,17 +381,31 @@ function HandleUser() {
     }
 
     //
-    // Get the PEB.
+    // Get the PEB. Keep in mind we can run into the same symbol problem with the
+    // PEB - so account for that.
     //
 
     logln('Populating the VA space with the PEB..');
     const Peb = CurrentProcess.Environment.EnvironmentBlock;
-    VaSpace.push(new _Region(
-        Peb.address,
-        Peb.targetType.size,
-        'Peb',
-        'rw-'
-    ));
+
+    if(Peb == undefined) {
+        const General = host.namespace.Debugger.State.PseudoRegisters.General;
+        VaSpace.push(new _Region(
+            General.peb.address,
+            0x1000,
+            'Peb',
+            'rw-'
+        ));
+
+        logln(`/!\\ Several regions have been skipped because nt!_TEB / nt!_PEB aren't available in your symbols.`);
+    } else {
+        VaSpace.push(new _Region(
+            Peb.address,
+            Peb.targetType.size,
+            'Peb',
+            'rw-'
+        ));
+    }
 }
 
 function HandleKernel() {
