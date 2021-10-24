@@ -23,6 +23,28 @@
     </ExtensionPackage>
 
     <ExtensionPackage>
+        <Name>Gdt</Name>
+        <Version>1.0.0.1</Version>
+        <Description>Gdt dump</Description>
+        <Components>
+            <ScriptComponent Name='Gdt' Type='Engine' File='..\gdt\gdt.js' FilePathKind='RepositoryRelative'>
+                <FunctionAliases>
+                    <FunctionAlias Name='gdt'>
+                        <AliasItem>
+                            <Syntax>
+                                <![CDATA[!gdt <segment selector>]]>
+                            </Syntax>
+                            <Description>
+                                <![CDATA[Dump the GDT or a GDT entry.]]>
+                            </Description>
+                        </AliasItem>
+                    </FunctionAlias>
+                </FunctionAliases>
+            </ScriptComponent>
+        </Components>
+    </ExtensionPackage>
+
+    <ExtensionPackage>
         <Name>sm</Name>
         <Version>1.0.0.1</Version>
         <Description>Pretty printers for JS::Value and JSObject objects in SpiderMonkey</Description>
