@@ -111,14 +111,20 @@ Present: ${hex(this._Present)}`;
     }
 }
 
+function GetGdt() {
+    const Control = host.namespace.Debugger.Utility.Control;
+    const [_, GdtrValue] = Control.ExecuteCommand('r @gdtr').First().split('=');
+    const [__, GdtlValue] = Control.ExecuteCommand('r @gdtl').First().split('=');
+    return [host.parseInt64(GdtrValue, 16), host.parseInt64(GdtlValue, 16)];
+}
+
 function DumpGdtEntry(Addr) {
     return new GdtEntry(Addr);
 }
 
 function DumpAllGdt() {
-    const Registers = host.currentThread.Registers;
-    const GdtBase = Registers.Kernel.gdtr;
-    const GdtEnd = GdtBase.add(Registers.Kernel.gdtl);
+    const [GdtBase, Gdtl] = GetGdt();
+    const GdtEnd = GdtBase.add(Gdtl);
     logln(`Dumping the GDT from ${hex(GdtBase)} to ${hex(GdtEnd)}..`);
     for (let CurrentEntry = GdtBase, Idx = 0;
         CurrentEntry.compareTo(GdtEnd) < 0;
@@ -130,8 +136,7 @@ function DumpAllGdt() {
 }
 
 function DumpGdt(Selector) {
-    const Registers = host.currentThread.Registers;
-    const GdtBase = Registers.Kernel.gdtr;
+    const [GdtBase, _] = GetGdt();
     const Index = Selector.bitwiseShiftRight(3);
     const Offset = Index.multiply(8);
     const EntryAddress = GdtBase.add(Offset);
