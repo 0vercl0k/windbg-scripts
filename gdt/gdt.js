@@ -142,7 +142,12 @@ function DumpGdt(Selector) {
 function Gdt(Selector) {
     const Attributes = host.currentSession.Attributes;
     const IsKernel = Attributes.Target.IsKernelTarget;
-    const Is64Bit = true;//Attributes.Machine.PointerSize.compareTo(8) == 0;
+    //
+    // XXX: Not sure how to do this better?
+    // Attributes.Machine.PointerSize is 4 when running in a Wow64 thread :-/.
+    //
+    let Is64Bit = true;
+    try { host.createPointerObject(0, 'nt', '_KGDTENTRY64*'); } catch(e) { Is64Bit = false; }
     if (!IsKernel || !Is64Bit) {
         logln('The running session is not a kernel session or it is not running a 64-bit OS, so exiting');
         return;
