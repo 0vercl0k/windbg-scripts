@@ -91,6 +91,9 @@ class GdtEntry {
         const BaseMiddle = Entry.Bytes.BaseMiddle.bitwiseShiftLeft(16);
         const BaseLow = Entry.BaseLow;
         this._Base = BaseUpper.add(BaseHigh).add(BaseMiddle).add(BaseLow);
+        const Flags1 = Entry.Bytes.Flags1;
+        const Flags2 = Entry.Bytes.Flags2.bitwiseShiftLeft(8);
+        this._Attrs = Flags2.add(Flags1);
     }
 
     toString() {
@@ -99,13 +102,14 @@ class GdtEntry {
         // valid offsets from 0 to 4095.
         const Size = this._Limit * Increments + (this._Granularity ? 0xfff : 0);
         let S = `dt nt!_KGDTENTRY64 ${hex(this._Addr)}
-   Base: [${hex(this._Base)} -> ${hex(this._Base.add(Size))}]
-   Type: ${this._TypeS} (${hex(this._Type)})
-    DPL: ${hex(this._Dpl)}
-Present: ${hex(this._Present)}`;
-       if (this._TypeS.startsWith('Code')) {
+     Base: [${hex(this._Base)} -> ${hex(this._Base.add(Size))}]
+     Type: ${this._TypeS} (${hex(this._Type)})
+      DPL: ${hex(this._Dpl)}
+  Present: ${hex(this._Present)}
+Atributes: ${hex(this._Attrs)}`;
+if (this._TypeS.startsWith('Code')) {
            S += `
-   Mode: ${this._LongMode ? '64b' : (this._DefaultBig ? '32b Compat' : '16b Compat')}`
+     Mode: ${this._LongMode ? '64b' : (this._DefaultBig ? '32b Compat' : '16b Compat')}`
        }
        return S;
     }
