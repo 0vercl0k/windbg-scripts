@@ -26,9 +26,9 @@ function ReadU64(Addr) {
     let Value = null;
     try {
         Value = host.memory.readMemoryValues(
-           Addr, 1, 8
+            Addr, 1, 8
         )[0];
-    } catch(e) {
+    } catch (e) {
     }
 
     return Value;
@@ -40,7 +40,7 @@ function ReadU32(Addr) {
         Value = host.memory.readMemoryValues(
             Addr, 1, 4
         )[0];
-    } catch(e) {
+    } catch (e) {
     }
 
     return Value;
@@ -52,7 +52,7 @@ function ReadU16(Addr) {
         Value = host.memory.readMemoryValues(
             Addr, 1, 2
         )[0];
-    } catch(e) {
+    } catch (e) {
     }
 
     return Value;
@@ -62,11 +62,11 @@ function ReadString(Addr, MaxLength) {
     let Value = null;
     try {
         Value = host.memory.readString(Addr);
-    } catch(e) {
+    } catch (e) {
         return null;
     }
 
-    if(Value.length > MaxLength) {
+    if (Value.length > MaxLength) {
         return Value.substr(0, MaxLength);
     }
 
@@ -77,7 +77,7 @@ function ReadWideString(Addr) {
     let Value = null;
     try {
         Value = host.memory.readWideString(Addr);
-    } catch(e) {
+    } catch (e) {
     }
 
     return Value;
@@ -115,7 +115,7 @@ function FormatU32(Addr) {
 }
 
 function FormatString(Str) {
-    if(Str.length > DefaultMaxStringLength) {
+    if (Str.length > DefaultMaxStringLength) {
         return Str.substr(0, DefaultMaxStringLength) + '...'
     }
 
@@ -139,8 +139,8 @@ let IsUser = false;
 let IsKernel = false;
 let VaSpace = [];
 
-function *SectionHeaders(BaseAddress) {
-    if(IsKernel && ReadU32(BaseAddress) == null) {
+function* SectionHeaders(BaseAddress) {
+    if (IsKernel && ReadU32(BaseAddress) == null) {
 
         //
         // If we can't read the module, then..bail :(.
@@ -168,7 +168,7 @@ function *SectionHeaders(BaseAddress) {
     // 0:000> ?? sizeof(_IMAGE_SECTION_HEADER)
     // unsigned int64 0x28
     const SizeofSectionHeader = 0x28;
-    for(let Idx = 0; Idx < NumberOfSections; Idx++) {
+    for (let Idx = 0; Idx < NumberOfSections; Idx++) {
         const SectionHeader = SectionHeaders.add(
             Idx.multiply(SizeofSectionHeader)
         );
@@ -195,26 +195,26 @@ function *SectionHeaders(BaseAddress) {
 
         // The section can be read.
         const IMAGE_SCN_MEM_READ = host.Int64(0x40000000);
-        if(BitSet(Characteristics, IMAGE_SCN_MEM_READ)) {
+        if (BitSet(Characteristics, IMAGE_SCN_MEM_READ)) {
             Properties[0] = 'r';
         }
 
-        if(IsKernel) {
+        if (IsKernel) {
             const IMAGE_SCN_MEM_DISCARDABLE = host.Int64(0x2000000);
-            if(BitSet(Characteristics, IMAGE_SCN_MEM_DISCARDABLE)) {
+            if (BitSet(Characteristics, IMAGE_SCN_MEM_DISCARDABLE)) {
                 Properties[0] = '-';
             }
         }
 
         // The section can be written to.
         const IMAGE_SCN_MEM_WRITE = host.Int64(0x80000000);
-        if(Characteristics.bitwiseAnd(IMAGE_SCN_MEM_WRITE).compareTo(0) != 0) {
+        if (Characteristics.bitwiseAnd(IMAGE_SCN_MEM_WRITE).compareTo(0) != 0) {
             Properties[1] = 'w';
         }
 
         // The section can be executed as code.
         const IMAGE_SCN_MEM_EXECUTE = host.Int64(0x20000000);
-        if(Characteristics.bitwiseAnd(IMAGE_SCN_MEM_EXECUTE).compareTo(0) != 0) {
+        if (Characteristics.bitwiseAnd(IMAGE_SCN_MEM_EXECUTE).compareTo(0) != 0) {
             Properties[2] = 'x';
         }
 
@@ -242,7 +242,7 @@ function HandleTTD() {
             p.Action == 'Alloc'
     );
 
-    for(const Chunk of Chunks) {
+    for (const Chunk of Chunks) {
         VaSpace.push(new _Region(
             Chunk.Address,
             Chunk.Size,
@@ -262,7 +262,7 @@ function HandleTTD() {
         p => p.TimeStart.compareTo(Position) < 0
     );
 
-    for(const VirtualAlloc of VirtualAllocs) {
+    for (const VirtualAlloc of VirtualAllocs) {
         VaSpace.push(new _Region(
             VirtualAlloc.ReturnValue,
             VirtualAlloc.Parameters[1],
@@ -283,10 +283,10 @@ function HandleTTD() {
         p => p.TimeStart.compareTo(Position) < 0
     );
 
-    for(const MapViewOfFile of MapViewOfFiles) {
+    for (const MapViewOfFile of MapViewOfFiles) {
         VaSpace.push(new _Region(
             MapViewOfFile.ReturnValue,
-            0x1000,
+            host.Int64(0x1000),
             'MappedView',
             // XXX: parse access
             'rw-'
@@ -302,13 +302,13 @@ function HandleUser() {
 
     logln('Populating the VA space with modules..');
     const CurrentProcess = host.currentProcess;
-    for(const Module of CurrentProcess.Modules) {
+    for (const Module of CurrentProcess.Modules) {
 
         //
         // Iterate over the section headers of the module.
         //
 
-        for(const Section of SectionHeaders(Module.BaseAddress)) {
+        for (const Section of SectionHeaders(Module.BaseAddress)) {
             VaSpace.push(new _Region(
                 Section.BaseAddress,
                 Section.Size,
@@ -335,7 +335,7 @@ function HandleUser() {
     //
 
     logln('Populating the VA space with TEBs & thread stacks..');
-    for(const Thread of CurrentProcess.Threads) {
+    for (const Thread of CurrentProcess.Threads) {
         const Teb = Thread.Environment.EnvironmentBlock;
 
         //
@@ -347,11 +347,11 @@ function HandleUser() {
         // against that in the below.
         //
 
-        if(Teb == undefined) {
+        if (Teb == undefined) {
             const General = host.namespace.Debugger.State.PseudoRegisters.General;
             VaSpace.push(new _Region(
                 General.teb.address,
-                0x100,
+                host.Int64(0x100),
                 'Teb of ' + Thread.Id.toString(16),
                 'rw-'
             ));
@@ -388,11 +388,11 @@ function HandleUser() {
     logln('Populating the VA space with the PEB..');
     const Peb = CurrentProcess.Environment.EnvironmentBlock;
 
-    if(Peb == undefined) {
+    if (Peb == undefined) {
         const General = host.namespace.Debugger.State.PseudoRegisters.General;
         VaSpace.push(new _Region(
             General.peb.address,
-            0x1000,
+            host.Int64(0x1000),
             'Peb',
             'rw-'
         ));
@@ -428,13 +428,13 @@ function HandleKernel() {
         p => p.BaseAddress.compareTo(MmUserProbeAddress) > 0
     );
 
-    for(const Module of KernelModules) {
+    for (const Module of KernelModules) {
 
         //
         // Iterate over the section headers of the module.
         //
 
-        for(const Section of SectionHeaders(Module.BaseAddress)) {
+        for (const Section of SectionHeaders(Module.BaseAddress)) {
             VaSpace.push(new _Region(
                 Section.BaseAddress,
                 Section.Size,
@@ -458,11 +458,11 @@ function HandleKernel() {
 }
 
 function InitializeVASpace() {
-    if(IsUser) {
+    if (IsUser) {
         HandleUser();
     }
 
-    if(IsTTD) {
+    if (IsTTD) {
 
         //
         // If we have a TTD target, let's do some more work.
@@ -471,14 +471,14 @@ function InitializeVASpace() {
         HandleTTD();
     }
 
-    if(IsKernel) {
+    if (IsKernel) {
         HandleKernel();
     }
 }
 
 function InitializeWrapper(Funct) {
     return Arg => {
-        if(!Initialized) {
+        if (!Initialized) {
             const CurrentSession = host.currentSession;
 
             //
@@ -523,15 +523,15 @@ class _Region {
         this.Executable = false;
         this.Readable = false;
         this.Writeable = false;
-        if(Properties.indexOf('r') != -1) {
+        if (Properties.indexOf('r') != -1) {
             this.Readable = true;
         }
 
-        if(Properties.indexOf('w') != -1) {
+        if (Properties.indexOf('w') != -1) {
             this.Writeable = true;
         }
 
-        if(Properties.indexOf('x') != -1) {
+        if (Properties.indexOf('x') != -1) {
             this.Executable = true;
         }
 
@@ -570,7 +570,7 @@ function AddressToRegion(Addr) {
     //
 
     const OrderedHits = Hits.sort(
-        p => p.Size
+        (a, b) => a.Size.compareTo(b.Size)
     );
 
     //
@@ -586,7 +586,7 @@ class _ChainEntry {
         this.Value = Value;
         this.AddrRegion = AddressToRegion(this.Addr);
         this.ValueRegion = AddressToRegion(this.Value);
-        if(this.ValueRegion == undefined) {
+        if (this.ValueRegion == undefined) {
             this.Name = 'Unknown';
         } else {
 
@@ -606,7 +606,7 @@ class _ChainEntry {
 
     toString() {
         const S = FormatPtr(this.Value) + ' (' + this.Name + ')';
-        if(!this.Last) {
+        if (!this.Last) {
             return S;
         }
 
@@ -615,7 +615,7 @@ class _ChainEntry {
         // And in order to know that, we need to have a valid `AddrRegion`.
         //
 
-        if(this.AddrRegion != undefined && this.AddrRegion.Executable) {
+        if (this.AddrRegion != undefined && this.AddrRegion.Executable) {
             return Disassemble(this.Addr);
         }
 
@@ -629,7 +629,7 @@ class _ChainEntry {
         // that is undefined.
         //
 
-        if(this.AddrRegion == undefined || this.AddrRegion.Readable) {
+        if (this.AddrRegion == undefined || this.AddrRegion.Readable) {
 
             const IsPrintable = p => {
                 return p != null &&
@@ -644,13 +644,13 @@ class _ChainEntry {
 
             const Ansi = ReadString(this.Addr);
 
-            if(IsPrintable(Ansi)) {
+            if (IsPrintable(Ansi)) {
                 return `${FormatPtr(this.Addr)} (Ascii(${FormatString(Ansi)}))`;
             }
 
             const Wide = ReadWideString(this.Addr);
-            if(IsPrintable(Wide)) {
-                return  `${FormatPtr(this.Addr)} (Unicode(${FormatString(Wide)}))`;
+            if (IsPrintable(Wide)) {
+                return `${FormatPtr(this.Addr)} (Unicode(${FormatString(Wide)}))`;
             }
         }
 
@@ -668,14 +668,14 @@ class _Chain {
         this.__Entries = [];
         this.__HasCycle = false;
         this.__Addr = Addr;
-        while(this.FollowPtr()) { };
+        while (this.FollowPtr()) { };
         this.__Length = this.__Entries.length;
 
         //
         // Tag the last entry as 'last'.
         //
 
-        if(this.__Length >= 1) {
+        if (this.__Length >= 1) {
             this.__Entries[this.__Length - 1].Last = true;
         }
     }
@@ -687,7 +687,7 @@ class _Chain {
         //
 
         const Value = ReadPtr(this.__Addr);
-        if(Value == null) {
+        if (Value == null) {
 
             //
             // We are done following pointers now!
@@ -705,7 +705,7 @@ class _Chain {
             p => p.Equals(Entry)
         );
 
-        if(DoesEntryExist) {
+        if (DoesEntryExist) {
 
             //
             // If we have seen this Entry before, it means there's a cycle
@@ -726,7 +726,7 @@ class _Chain {
     }
 
     toString() {
-        if(this.__Entries.length == 0) {
+        if (this.__Entries.length == 0) {
             return '';
         }
 
@@ -740,7 +740,7 @@ class _Chain {
         // Add a little something if we have a cycle so that the user knows.
         //
 
-        if(this.__HasCycle) {
+        if (this.__HasCycle) {
             S += ' [...]';
         }
 
@@ -748,7 +748,7 @@ class _Chain {
     }
 
     *[Symbol.iterator]() {
-        for(const Entry of this.__Entries) {
+        for (const Entry of this.__Entries) {
             yield Entry;
         }
     }
@@ -768,7 +768,7 @@ function CreateChain(Addr) {
 }
 
 function Telescope(Addr) {
-    if(Addr == undefined) {
+    if (Addr == undefined) {
         logln('!telescope <addr>');
         return;
     }
@@ -784,7 +784,7 @@ function Telescope(Addr) {
     const PointerSize = CurrentSession.Attributes.Machine.PointerSize;
     const FormatOffset = p => '0x' + p.toString(16).padStart(4, '0');
 
-    for(let Idx = 0; Idx < Lines; Idx++) {
+    for (let Idx = 0; Idx < Lines; Idx++) {
         const Offset = PointerSize.multiply(Idx);
         const CurAddr = Addr.add(Offset);
         const Chain = new _Chain(CurAddr);
